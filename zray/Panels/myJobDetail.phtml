@@ -1,0 +1,43 @@
+<div style="width: 45%; float: left;">
+<ul id="job_list">
+</ul>
+</div>
+
+<div id="job_detail" style="width: 45%; float: left;">
+NOT IMPLEMENTED YET
+</div>
+
+<script type="text/javascript">
+
+
+function getJobDetail(jobId) {
+    //document.getElementById('cache_clear_loading').style.display = 'block';
+    //document.getElementById('cache_clear_success_msg').style.display = 'none';
+    zray.runAction('JobQueue', 'getJobDetail', {"jobId": jobId}, function(response) {
+        //document.getElementById('cache_clear_loading').style.display = 'none';
+        //document.getElementById('cache_clear_success_msg').style.display = 'block';
+        //console.log(response);
+    });
+}
+
+var storageOpcodeInfoBlacklist;
+
+(function() {
+    storageJobListItems = zray.getStorage('jobListItems');
+
+	zray.registerDataHandler('JobQueue', 'jobList', function(extensionData, requestData) {
+    	storageJobListItems.setData(extensionData);
+
+    	var data = storageJobListItems.data;
+    	for (i = 0; i < data.length; i++) {
+    		$("#job_list").append('<li><a>Get Detail for Job <span class="job_id">' + data[i].id + '</span> -  ' + data[i].url + '</a></li>');
+        }
+
+    	$("li a").click(function(){
+    		  var jobId = $(this).find("span.job_id").text();
+
+    		  //getJobDetail(jobId);
+    	});
+    });
+})();
+</script>
