@@ -20,8 +20,6 @@ class Module extends \ZRay\ZRayModule
                     'menuTitle' => 'Job Detail',
                     'panelTitle' => 'Job Detail',
                     'resources' => array(
-                        'webapi' => 'zendwebapi.js',
-                        'chart' => 'chart.js'
                     )
                 )
             )
