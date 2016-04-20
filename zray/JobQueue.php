@@ -21,19 +21,32 @@ class JobQueue
         $jobId = $context['returnValue'];
         $jobInfo = $queue->getJobInfo($jobId);
         
-        $storage['jobsStarted']['Job ' . $jobId] = array(
+        $jobInfoStorage = array(
             'Job ID' => $jobId,
             'Job URL' => $context['functionArgs'][0],
-            'Vars' => (array) $context['functionArgs'][1],
-            'Options' => (array) $context['functionArgs'][2],
-            'Queue' => array('Id' => $jobInfo['queue_id'], 'Name' => $jobInfo['queue_name']),
-            'Priority' => $this->getConstantText($jobInfo['priority'], 'PRIORITY'),
-            'Predecessor' => ($jobInfo['predecessor'] == 0) ? 'none' : $jobInfo['predecessor']
         );
+        
+        if (isset($context['functionArgs'][1])) {
+            $jobInfoStorage['Vars'] = (array) $context['functionArgs'][1];
+        }
+        if (isset($context['functionArgs'][2])) {
+            $jobInfoStorage['Options'] = (array) $context['functionArgs'][2];
+        }
+        
+        $jobInfoStorage['Queue'] = array('Id' => $jobInfo['queue_id'], 'Name' => $jobInfo['queue_name']);
+        $jobInfoStorage['Priority'] = $this->getConstantText($jobInfo['priority'], 'PRIORITY');
+        $jobInfoStorage['Predecessor'] = ($jobInfo['predecessor'] == 0) ? 'none' : $jobInfo['predecessor'];
+        
+        $storage['jobsStarted']['Job ' . $jobId] = $jobInfoStorage;
         
         $storage['jobList'][] = array(
             'id' => $jobId,
             'url' => $context['functionArgs'][0]
         );
     }
+    
+    public function afterinit($context, &$storage) {
+        $storage['init'][] = array('abc' => 'xyz');
+    }
+
 }
