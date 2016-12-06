@@ -100,6 +100,29 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
     #zend_server_login {
         margin-left: 15px !important;
     }
+    
+    .tooltip.top {
+        padding: 5px 0 !important;
+        margin-top: -3px !important;
+    }
+    
+    .tooltip-inner {
+        color: #ececec !important;
+        line-height: 1em !important;
+        background: rgba(101, 101, 101, 0.7) !important;
+        border: none !important;
+        border-radius: 2px !important;
+        -webkit-box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 6px 0 rgba(0, 0, 0, 0.12) !important;
+        box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 6px 0 rgba(0, 0, 0, 0.12) !important;
+    }
+    .tooltip-inner {
+        max-width: 200px !important;
+        padding: 3px 8px !important;
+        color: #fff !important;
+        text-align: center !important;
+        background-color: #000 !important;
+        border-radius: 4px !important;
+    }
 </style>
 
 <div id="zend_server_login">
@@ -145,15 +168,14 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
             <tr ng-repeat-start="job in joblist" jobrow jobid="{{job.id}}">
           	  <td class="job_id">{{ job.id }}</td>
               <td class="job_url">{{ job.url }}</td>
-              <td class="job_name">{{ job.info.Options.name }} <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="top" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus.">Top</button</td>
+              <td class="job_name">{{ job.info.Options.name }}</td>
               <td class="job_scheduled_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobScheduledStartTime | formattime | trust"></span></td>
               <td class="job_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobStartTime | formattime | trust"></span></td>
               <td class="job_end_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobEndTime | formattime | trust"></span></td>
-              <td class="job_status webapidata loading">
-              <button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="" data-original-title="Tooltip on top">Top</button>
-                <span ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}"  data-toggle="tooltip" data-placement="top" title="" data-original-title="Tooltip on top" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
+              <td class="job_status webapidata loading"><span ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
               <td>
-              	<button class="btn btn-info" ng-click="update(this)"><i class="material-icons">autorenew</i></button>
+              	<button class="btn btn-info" ng-click="update(this)" ng-mouseover="job.tooltip=true" ng-mouseout="job.tooltip=false"><i class="material-icons">autorenew</i></button>
+              	<div ng-if="job.tooltip" class='tooltip fade top in'><div class='tooltip-inner'>Reload Job Information</div></div>
               </td>
               <td>
             	<button ng-if="job.expanded" ng-click="job.expanded = false" class="btn btn-info"><i class="material-icons">keyboard_arrow_up</i></button>
