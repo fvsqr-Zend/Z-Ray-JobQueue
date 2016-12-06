@@ -41,7 +41,8 @@ class JobQueue
         
         $storage['jobList'][] = array(
             'id' => $jobId,
-            'url' => $context['functionArgs'][0]
+            'url' => $context['functionArgs'][0],
+            'info' => $jobInfoStorage
         );
     }
     
