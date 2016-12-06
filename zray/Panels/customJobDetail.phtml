@@ -149,7 +149,9 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
               <td class="job_scheduled_start_time webapidata loading"><span class="" ng-bind-html="jobScheduledStartTime | formattime | trust"></span></td>
               <td class="job_start_time webapidata loading"><span class="" ng-bind-html="jobStartTime | formattime | trust"></span></td>
               <td class="job_end_time webapidata loading"><span class="" ng-bind-html="jobEndTime | formattime | trust"></span></td>
-              <td class="job_status webapidata loading"><button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="" data-original-title="Tooltip on top">Top</button><span ng-click="openZS(this)" class="label label-default"  data-toggle="tooltip" data-placement="top" title="" data-original-title="Tooltip on top"></span></td>
+              <td class="job_status webapidata loading">
+              <button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="" data-original-title="Tooltip on top">Top</button>
+                <span ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}"  data-toggle="tooltip" data-placement="top" title="" data-original-title="Tooltip on top" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
               <td>
               	<button class="btn btn-info" ng-click="update(this)"><i class="material-icons">autorenew</i></button>
               </td>
@@ -244,18 +246,15 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
                     el: el,
                     updateCell: function(response) { 
                         var job = response.responseData.jobInfo.job;
-            			//el.find('td.job_scheduled_start_time span').html(JobDetail.formatTime(job.start_or_schedule_time));
-            			//el.find('td.job_start_time span').html((job.startTime) ? new Date(Date.parse(job.startTime)).toLocaleString() : "-/-");
-            			//el.find('td.job_start_time span').html(job.startTime);
+
             			this.scope.jobScheduledStartTime = job.start_or_schedule_time;
             			this.scope.jobStartTime = job.startTime;
             			this.scope.jobEndTime = job.endTime;
-            			this.scope.$apply(function(){
-            				
-                    	});
-            			//el.find('td.job_end_time span').html((job.endTime) ? new Date(Date.parse(job.endTime)).toLocaleString() : "-/-");
-            			el.find('td.job_status span').html(JobDetail.getStatusByStatusId(job.status)).removeClass().addClass('label').addClass(JobDetail.getLabelByStatusId(job.status));
 
+            			this.scope.jobStatus = job.status;
+
+            			this.scope.$apply( function(){ } );
+            			
             			el.find('td.webapidata span').show();
             			el.find('td.webapidata').removeClass('loading');
 
@@ -288,7 +287,7 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         function replaceConstants(job) {
         	if (typeof job != 'undefined' || job == '') {
         		job = JSON.parse(job)
-				job["status"] = JobDetail.getStatusByStatusId(job.status);
+				job["status"] = jobQueueConstants[job.status];
             	return JSON.stringify(job, null, 2);
         	}
         	
@@ -396,7 +395,26 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
 
         return formattime;
     });
-    
+
+    app.filter('statusIdToText', function () {
+        function statusIdToText(id) {
+        	return jobQueueConstants[id];
+        }
+
+        return statusIdToText;
+    });
+
+    app.filter('statusIdToLabel', function () {
+        function statusIdToLabel(id) {
+        	if (!id) return "label-default";
+        	
+            var text = jobQueueConstants[id];
+        	return jobQueueLabels[text];
+        }
+
+        return statusIdToLabel;
+    });
+
     
     angular.element(document).ready(function() {
         angular.bootstrap(document, ['app']);
@@ -452,31 +470,12 @@ var JobDetail = {
     	});
     },
 
-    getStatusByStatusId: function (statusId) {
-    	return jobQueueConstants[statusId];
-	},
-
-    getLabelByStatusId: function (statusId) {
-		var text = this.getStatusByStatusId(statusId);
-
-		return jobQueueLabels[text];
-	},
-
 	decodeEntities: function (s) {
         var str, temp= document.createElement('p');
         temp.innerHTML= s;
         str= temp.textContent || temp.innerText;
         temp=null;
 		return str;
-	},
-
-	formatTime: function (timeString) {
-		if (!timeString) return "-/-";
-		timeString = new Date(Date.parse(timeString)).toLocaleString();
-
-		t = timeString.split(',');
-
-		return t[1] + '<br><small>' + t[0] + '<small>';
 	}
 };
 
