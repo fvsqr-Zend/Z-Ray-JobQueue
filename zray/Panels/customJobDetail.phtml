@@ -364,9 +364,9 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
 				var output = JobDetail.decodeEntities(job.output);
 				output = output.replace(/\\n/g, "\n");
 				var html = "<b><i>Vars:</i></b>\n" + JSON.stringify(JSON.parse(job.vars_source), null, 2);
-				html += "\n\n<b><i>Output:</i></b>\n" + output;
-				html += "\n\n<b><i>httpHeaders:</i></b>\n" + job.httpHeaders;
-				html += "\n\n<b><i>Error:</i></b>\n" + job.error;
+				html += "\n\n<b><i>Output:</i></b>\n" + (output || '-/-');
+				html += "\n\n<b><i>httpHeaders:</i></b>\n" + (job.httpHeaders || '-/-');
+				html += "\n\n<b><i>Error:</i></b>\n" + (job.error || '-/-');
 
             	return html;
         	}
