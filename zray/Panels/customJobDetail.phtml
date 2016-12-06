@@ -146,9 +146,9 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
           	  <td class="job_id">{{ job.id }}</td>
               <td class="job_url">{{ job.url }}</td>
               <td class="job_name">{{ job.info.Options.name }} <button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="top" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus.">Top</button</td>
-              <td class="job_scheduled_start_time webapidata loading"><span class="" ng-bind-html="jobScheduledStartTime | formattime | trust"></span></td>
-              <td class="job_start_time webapidata loading"><span class="" ng-bind-html="jobStartTime | formattime | trust"></span></td>
-              <td class="job_end_time webapidata loading"><span class="" ng-bind-html="jobEndTime | formattime | trust"></span></td>
+              <td class="job_scheduled_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobScheduledStartTime | formattime | trust"></span></td>
+              <td class="job_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobStartTime | formattime | trust"></span></td>
+              <td class="job_end_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobEndTime | formattime | trust"></span></td>
               <td class="job_status webapidata loading">
               <button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="" data-original-title="Tooltip on top">Top</button>
                 <span ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}"  data-toggle="tooltip" data-placement="top" title="" data-original-title="Tooltip on top" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
@@ -157,7 +157,7 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
               </td>
               <td>
             	<button ng-if="job.expanded" ng-click="job.expanded = false" class="btn btn-info"><i class="material-icons">keyboard_arrow_up</i></button>
-                <button ng-if="!job.expanded" ng-click="job.expanded = true; setExpansionStyle();" class="btn btn-info"><i class="material-icons">keyboard_arrow_down</i></button>	
+                <button ng-if="!job.expanded" ng-click="job.expanded = true; setExpandedStyle();" class="btn btn-info"><i class="material-icons">keyboard_arrow_down</i></button>	
               </td>
             </tr>
             <tr ng-if="job.expanded" ng-repeat-end="">
@@ -227,7 +227,7 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         	window.open(url, '_blank');
         }
 
-        $scope.setExpansionStyle = function () {
+        $scope.setExpandedStyle = function () {
             $('.job-statistics').addClass('col-md-6');
 			$('.job-details').addClass('col-md-6');
         }
@@ -250,21 +250,18 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
             			this.scope.jobScheduledStartTime = job.start_or_schedule_time;
             			this.scope.jobStartTime = job.startTime;
             			this.scope.jobEndTime = job.endTime;
-
             			this.scope.jobStatus = job.status;
+
+            			this.scope.loading = false;
 
             			this.scope.$apply( function(){ } );
             			
-            			el.find('td.webapidata span').show();
-            			el.find('td.webapidata').removeClass('loading');
-
             			this.scope.jobResponse[job.id] = response.responseData.jobInfo;
                     }
                 }
 
                 scope.$watch('updateCnt', function (newVal, oldVal) {
-                    el.find('td.webapidata span').hide();
-                    el.find('td.webapidata').addClass('loading');
+                    scope.loading = true;
                     JobDetail.getJobDetail(attr.jobid, row);
                 });
             }
