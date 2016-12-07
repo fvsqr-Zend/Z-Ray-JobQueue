@@ -159,6 +159,7 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
             <th style="width: 170px;">Scheduled</th>
             <th style="width: 170px;">Start Time</th>
             <th style="width: 170px;">End Time</th>
+            <th style="width: 170px;">Z-Ray</th>
             <th style="width: 140px;">Status</th>
             <th style="width: 70px;">&nbsp;</th>
             <th style="width: 70px;">&nbsp;</th>
@@ -172,6 +173,9 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
               <td class="job_scheduled_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobScheduledStartTime | formattime | trust"></span></td>
               <td class="job_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobStartTime | formattime | trust"></span></td>
               <td class="job_end_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobEndTime | formattime | trust"></span></td>
+              <td class="">
+              	<button ng-if="zrayId" class="btn btn-info" ng-click="zray(this)"><i class="material-icons">launch</i></button>	
+			  </td>
               <td class="job_status webapidata loading"><span ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
               <td>
               	<button class="btn btn-info" ng-click="update(this)" ng-mouseover="job.tooltip=true" ng-mouseout="job.tooltip=false"><i class="material-icons">autorenew</i></button>
@@ -183,7 +187,7 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
               </td>
             </tr>
             <tr ng-if="job.expanded" ng-repeat-end="">
-              <td colspan="8"><jobdetail jobid="{{job.id}}"></jobdetail></td>
+              <td colspan="9"><jobdetail jobid="{{job.id}}"></jobdetail></td>
             </tr>
           </tbody>
         </table>
@@ -258,6 +262,11 @@ var ngJob = function() {
         	window.open(url, '_blank');
         }
 
+        $scope.zray = function(el) {
+        	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer/Z-Ray-Id/' + el.zrayId;
+        	window.open(url, '_blank');
+        }
+
         $scope.setExpandedStyle = function () {
             $('.job-statistics').addClass('col-md-6');
 			$('.job-details').addClass('col-md-6');
@@ -286,6 +295,14 @@ var ngJob = function() {
             			this.scope.jobStatus = job.status;
 
             			this.scope.loading = false;
+
+            			var zrayPattern = /ZRay-ID:\s(\d+@\d+@\d+@\d+)/g;
+            			var zray = response.responseData.jobInfo.jobDetails.output.match(zrayPattern);
+
+            			if (Array.isArray(zray)) {
+            				zray = zray[0].substr(9);
+            				this.scope.zrayId = zray;
+            			}            			
 
             			this.scope.$apply( function(){ } );
 
