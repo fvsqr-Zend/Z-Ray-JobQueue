@@ -227,9 +227,6 @@ jQuery.ajaxSetup({
 	cache: true
 });
 
-//jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.js", function( data, textStatus, jqxhr ){
-//});
-
 var ngJob = function() {
     JobApp = angular.module('JobApp',[]).controller('JobCtrl', function($scope) {
 
@@ -448,20 +445,6 @@ var ngJob = function() {
 
         return statusIdToLabel;
     });
-
-    JobApp.controller('JobWorkerCtrl', function($scope) {
-    });
-
-    /*JobApp.run(function ($rootScope){
-        debugger;
-        $rootScope.joblist = jobListData;
-        $rootScope.jobWorkerlist = jobWorkerListData;
-    });
-    */
-    
-    //angular.element(document).ready(function() {
-    //    angular.bootstrap(document, ['JobApp']);
-    //});
 }
 
 var JobDetail = {
@@ -522,11 +505,13 @@ var JobDetail = {
 	}
 };
 
+var jobListData;
 var ngJobStarted = false;
+
 (function () {
 	ngJobStarted = true;
 	if ((typeof ngJobWorkerStarted == 'undefined' || !ngJobWorkerStarted)){
-    	jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.js", function(){
+    	jQuery.getScript("http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.js", function(){
         	var apps = [];
             ngJob();
             apps.push('JobApp');
@@ -540,11 +525,7 @@ var ngJobStarted = false;
             });
         });
     }
-})();
 
-var jobListData;
-
-(function() {
 	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer';
 	$("#zend_server_login button, #zend_server_login a").on( "click", function() {
 		window.open(url, '_blank');
