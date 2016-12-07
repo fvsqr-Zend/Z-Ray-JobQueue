@@ -130,7 +130,7 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
 	To see Job Details, please login to the <a href="">Zend Server UI</a>.
 </div>
   
-<div ng-controller="JobCtrl"> 
+<div ng-controller="JobCtrl"  id="JobCtrl"> 
   
     <div id="job-list-simple">
         <table id="table-job-list" class="table table-striped table-hover ">
@@ -191,7 +191,7 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
 
 </div>
 
-<div id="template" style="display: none">
+<div id="jobdetail-template" style="display: none">
     <div class="row">
       <div class="job-statistics">
         <div class="bs-component">
@@ -221,9 +221,17 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
 </div>
 
 <script type="text/javascript">
+var JobApp;
 
-jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.js", function( data, textStatus, jqxhr ){
-    var app = angular.module('app',[]).controller('JobCtrl', function($scope) {
+jQuery.ajaxSetup({
+	cache: true
+});
+
+//jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.js", function( data, textStatus, jqxhr ){
+//});
+
+var ngJob = function() {
+    JobApp = angular.module('JobApp',[]).controller('JobCtrl', function($scope) {
 
     	$scope.loggedIn = false;
 
@@ -232,10 +240,14 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
 				$scope.loggedIn = true;
         	});
         });
-
-        $scope.joblist = storageJobListItems.data;
-
+        
         $scope.updateCnt = 0;
+
+        $scope.setJobList = function(data) {
+            this.joblist = data;
+            this.initJobList();
+            this.$apply(function(){ });
+        };
 
         $scope.update = function(el) {
             el.updateCnt++;
@@ -255,12 +267,14 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         }
 
         $scope.jobResponse = [];
-        $scope.joblist.forEach(function(job) {
-        	$scope.jobResponse[job.id] = '';	    
-		});
+        $scope.initJobList = function() {
+            $scope.joblist.forEach(function(job) {
+            	$scope.jobResponse[job.id] = '';	    
+    		});
+        }
     });
 
-    app.directive('jobrow', function(){
+    JobApp.directive('jobrow', function(){
         return {
             link: function(scope, el, attr){
                 var row = {
@@ -277,7 +291,8 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
             			this.scope.loading = false;
 
             			this.scope.$apply( function(){ } );
-            			
+
+            			if (!this.scope.jobResponse) return;
             			this.scope.jobResponse[job.id] = response.responseData.jobInfo;
                     }
                 }
@@ -290,9 +305,9 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         }
     });
 
-    app.directive('jobdetail', function(){
+    JobApp.directive('jobdetail', function(){
         return {
-            template: $('#template').html(),
+            template: $('#jobdetail-template').html(),
             link: function(scope, el, attr) {
             	var res = scope.jobResponse[attr.jobid]
             	scope.jobstatistics = JSON.stringify(res.job);
@@ -301,7 +316,7 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         }
     });
 
-    app.filter('replaceConstantsStatistics', function () {
+    JobApp.filter('replaceConstantsStatistics', function () {
         
         function replaceConstants(job) {
         	if (typeof job != 'undefined' || job == '') {
@@ -316,7 +331,7 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         return replaceConstants;
     });
 
-	app.filter('replaceConstantsDetail', function () {
+    JobApp.filter('replaceConstantsDetail', function () {
         
         function replaceConstants(job) {
         	if (typeof job != 'undefined' || job == '') {
@@ -341,7 +356,7 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         return replaceConstants;
     });
 
-	app.filter('removeJsonChars', function () {
+    JobApp.filter('removeJsonChars', function () {
         
         function replaceConstants(job) {
         	if (typeof job != 'undefined' || job == '') {
@@ -355,7 +370,7 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         return replaceConstants;
     });
 
-	app.filter('makeTable', function () {
+    JobApp.filter('makeTable', function () {
         
         function makeTable(job) {
         	if (typeof job != 'undefined' || job == '') {
@@ -376,7 +391,7 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         return makeTable;
     });
 
-	app.filter('filterDetails', function () {
+    JobApp.filter('filterDetails', function () {
         function filterDetails(job) {
         	if (typeof job != 'undefined' || job == '') {
 				job = JSON.parse(job);
@@ -396,13 +411,13 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         return filterDetails;
     });
 
-    app.filter("trust", ['$sce', function($sce) {
+    JobApp.filter("trust", ['$sce', function($sce) {
 		return function(htmlCode){
 			return $sce.trustAsHtml(htmlCode);
 		}
   	}]);
 
-    app.filter('formattime', function () {
+    JobApp.filter('formattime', function () {
         function formattime(timeString) {
         	if (!timeString) return "-/-";
     		timeString = new Date(Date.parse(timeString)).toLocaleString();
@@ -415,7 +430,7 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         return formattime;
     });
 
-    app.filter('statusIdToText', function () {
+    JobApp.filter('statusIdToText', function () {
         function statusIdToText(id) {
         	return jobQueueConstants[id];
         }
@@ -423,7 +438,7 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         return statusIdToText;
     });
 
-    app.filter('statusIdToLabel', function () {
+    JobApp.filter('statusIdToLabel', function () {
         function statusIdToLabel(id) {
         	if (!id) return "label-default";
         	
@@ -434,11 +449,20 @@ jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.
         return statusIdToLabel;
     });
 
-    
-    angular.element(document).ready(function() {
-        angular.bootstrap(document, ['app']);
+    JobApp.controller('JobWorkerCtrl', function($scope) {
     });
-});
+
+    /*JobApp.run(function ($rootScope){
+        debugger;
+        $rootScope.joblist = jobListData;
+        $rootScope.jobWorkerlist = jobWorkerListData;
+    });
+    */
+    
+    //angular.element(document).ready(function() {
+    //    angular.bootstrap(document, ['JobApp']);
+    //});
+}
 
 var JobDetail = {
 	webApi: function (url, row) {
@@ -498,6 +522,28 @@ var JobDetail = {
 	}
 };
 
+var ngJobStarted = false;
+(function () {
+	ngJobStarted = true;
+	if ((typeof ngJobWorkerStarted == 'undefined' || !ngJobWorkerStarted)){
+    	jQuery.getScript( "http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.js", function(){
+        	var apps = [];
+            ngJob();
+            apps.push('JobApp');
+            if (typeof ngJobWorker == 'function') {
+                ngJobWorker();
+                apps.push('JobWorkerApp');
+            }
+            angular.element(document).ready(function() {
+                angular.bootstrap(document, apps);
+                if (jobListData) $('#JobCtrl').scope().setJobList(jobListData);
+            });
+        });
+    }
+})();
+
+var jobListData;
+
 (function() {
 	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer';
 	$("#zend_server_login button, #zend_server_login a").on( "click", function() {
@@ -506,11 +552,13 @@ var JobDetail = {
 
 	JobDetail.isLoggedIn( function() {} );
 
-	storageJobListItems = zray.getStorage('jobListItems');
-
     zray.registerDataHandler('JobQueue', 'jobList', function(extensionData, requestData) {
-    	storageJobListItems.setData(extensionData);
+        jobListData = extensionData;
+    	if (!$('#JobCtrl').scope || !$('#JobCtrl').scope().setJobList) return;
+
+    	$('#JobCtrl').scope().setJobList(jobListData)
     });
+    
 })();
 	
 </script>
