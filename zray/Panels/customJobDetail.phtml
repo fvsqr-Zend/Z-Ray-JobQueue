@@ -539,6 +539,7 @@ var ngJobStarted = false;
             angular.element(document).ready(function() {
                 angular.bootstrap(document, apps);
                 if (jobListData) $('#JobCtrl').scope().setJobList(jobListData);
+                if (jobWorkerListData && $('#JobWorkerCtrl').scope && $('#JobWorkerCtrl').scope().setJobList) $('#JobWorkerCtrl').scope().setJobList(jobWorkerListData);
             });
         });
     }
