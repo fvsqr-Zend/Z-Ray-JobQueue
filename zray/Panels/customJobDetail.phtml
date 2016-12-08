@@ -180,7 +180,7 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
               <td class="job_status webapidata loading"><span ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
               <td>
               	<button class="btn btn-info" ng-click="update(this)" ng-mouseover="job.tooltip=true" ng-mouseout="job.tooltip=false"><i class="material-icons">autorenew</i></button>
-              	<div ng-if="job.tooltip" class='tooltip fade top in'><div class='tooltip-inner'>Reload Job Information</div></div>
+              	<div ng-if="job.tooltip" class='tooltip fade top in'><div class='tooltip-inner'>Reload information for job {{job.id}}</div></div>
               </td>
               <td>
             	<button ng-if="job.expanded" ng-click="job.expanded = false" class="btn btn-info"><i class="material-icons">keyboard_arrow_up</i></button>
