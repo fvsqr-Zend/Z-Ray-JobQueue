@@ -123,6 +123,16 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
         background-color: #000 !important;
         border-radius: 4px !important;
     }
+    
+    .btn-xs .material-icons {
+    	font-size: 20px !important;
+    }
+    
+    .btn-xs {
+    	margin-bottom: 0 !important;
+    	padding: 1px 5px !important;
+    	border-radius: 3px !important;
+    }
 </style>
 
 <div id="zend_server_login">
@@ -161,7 +171,10 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
             <th style="width: 170px;">End Time</th>
             <th style="width: 70px;">Z-Ray</th>
             <th style="width: 140px;">Status</th>
-            <th style="width: 70px;">&nbsp;</th>
+            <th style="width: 70px;">
+            	<button class="btn btn-xs btn-default" ng-class="{'btn-success': automaticreload}" ng-click="toggleAutomaticReload(this)" ng-mouseover="tooltipreload=true" ng-mouseout="tooltipreload=false"><i class="material-icons">repeat</i></button>
+              	<div ng-if="tooltipreload" class='tooltip fade top in'><div class='tooltip-inner'>Enable/Disable automatic reload of job information</div></div>
+            </th>
             <th style="width: 70px;">&nbsp;</th>
           </tr>
           </thead>
@@ -233,7 +246,7 @@ jQuery.ajaxSetup({
 });
 
 var ngJob = function() {
-    JobApp = angular.module('JobApp',[]).controller('JobCtrl', function($scope) {
+    JobApp = angular.module('JobApp',[]).controller('JobCtrl', function($scope, $interval) {
 
     	$scope.loggedIn = false;
 
@@ -253,10 +266,35 @@ var ngJob = function() {
 
         $scope.update = function(el) {
             el.updateCnt++;
-            if (el.job.expanded == true) {
-            	el.job.expanded = false;
-            }
         }
+
+        $scope.toggleAutomaticReload = function(el) {
+			$scope.automaticreload = $scope.automaticreload != true;
+			
+			if ($scope.automaticreload) {
+				el.$parent.updateCnt++;
+				$scope.startAutomaticReload(function () {
+					el.$parent.updateCnt++;
+				});
+			}
+			else {
+				$scope.stopAutomaticReload();
+			}
+        }
+
+        var automaticReload;
+        $scope.startAutomaticReload = function(callback) {
+			if ( angular.isDefined(automaticReload) ) return;
+			automaticReload = $interval(callback, 5000);
+        };
+
+        $scope.stopAutomaticReload = function() {
+			if (angular.isDefined(automaticReload)) {
+				$interval.cancel(automaticReload);
+				automaticReload = undefined;
+			}
+        };
+        
 
         $scope.openZS = function(el) {
         	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer/#!/job-queue/jobs?filter_timeRange_predefined=All&grid=' + el.job.id;
@@ -312,8 +350,9 @@ var ngJob = function() {
                     }
                 }
 
-                scope.$watch('updateCnt', function (newVal, oldVal) {
+                scope.$watch('updateCnt', function () {
                     scope.loading = true;
+                    scope.job.expanded = false;
                     JobDetail.getJobDetail(attr.jobid, row);
                 });
             }
