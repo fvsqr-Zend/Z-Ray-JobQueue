@@ -187,17 +187,17 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
               <td class="job_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobStartTime | formattime | trust"></span></td>
               <td class="job_end_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobEndTime | formattime | trust"></span></td>
               <td class="">
-              	<button ng-if="zrayId" class="btn btn-info" ng-click="zray(this)"  ng-mouseover="job.tooltipzray=true" ng-mouseout="job.tooltipzray=false"><i class="material-icons">launch</i></button>
+              	<button ng-if="zrayId" class="btn btn-info" ng-click="zray(this)" ng-hide="loading" ng-mouseover="job.tooltipzray=true" ng-mouseout="job.tooltipzray=false"><i class="material-icons">launch</i></button>
               	<div ng-if="job.tooltipzray" class='tooltip fade top in'><div class='tooltip-inner'>Open Z-Ray Snapshot for job {{job.id}} in new tab</div></div>	
 			  </td>
-              <td class="job_status webapidata loading"><span ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
+              <td class="job_status" ng-class="{loading: loading}"><span ng-hide="loading" ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
               <td>
               	<button class="btn btn-info" ng-click="update(this)" ng-mouseover="job.tooltip=true" ng-mouseout="job.tooltip=false"><i class="material-icons">autorenew</i></button>
               	<div ng-if="job.tooltip" class='tooltip fade top in'><div class='tooltip-inner'>Reload information for job {{job.id}}</div></div>
               </td>
               <td>
             	<button ng-if="job.expanded" ng-click="job.expanded = false" class="btn btn-info"><i class="material-icons">keyboard_arrow_up</i></button>
-                <button ng-if="!job.expanded" ng-click="job.expanded = true; setExpandedStyle();" class="btn btn-info"><i class="material-icons">keyboard_arrow_down</i></button>	
+                <button ng-if="!job.expanded" ng-click="job.expanded = true; setExpandedStyle();" class="btn btn-info" ng-hide="loading"><i class="material-icons">keyboard_arrow_down</i></button>	
               </td>
             </tr>
             <tr ng-if="job.expanded" ng-repeat-end="">
