@@ -1,0 +1,557 @@
+<?php 
+$ZendJobQueue = new ReflectionClass('ZendJobQueue');
+
+$c = array_filter (
+    $ZendJobQueue->getConstants(), 
+    function ($key) {
+        return strpos($key, 'STATUS_') === 0;
+    },
+    ARRAY_FILTER_USE_KEY
+);
+
+$c = array_flip($c);
+
+array_walk($c, function(&$value) {
+   $value = trim(ucwords(strtolower(str_replace(['STATUS', '_'], ['', ' '], $value)))); 
+});
+
+$jobQueueConstants = json_encode($c, JSON_FORCE_OBJECT);
+?>
+
+<script>
+var jobQueueConstants = <?php echo $jobQueueConstants?>;
+var jobQueueLabels = {
+		"Pending": "label-default",
+		"Waiting Predecessor": "label-default",
+		"Running" : "label-info",
+		"Completed": "label-warning",
+		"Ok": "label-success",
+		"Failed": "label-danger",
+		"Logically Failed": "label-danger",
+		"Timeout": "label-danger",
+		"Removed": "label-danger",
+		"Scheduled": "label-default",
+		"Suspended": "label-default"
+};
+
+var ZSbaseUrl;
+ZSbaseUrl = document.createElement('a');
+ZSbaseUrl.href = window.zendDevBar.baseUrl;
+</script>
+
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/4.0.2/bootstrap-material-design.css">
+
+<style>
+    #table-jobworker-list {
+    	width: 98%;
+    	margin-left: 10px;
+    }
+    
+    #table-jobworker-list th {
+    	font-weight: bold;
+    }
+    
+    #table-jobworker-list td {
+        vertical-align:middle;
+    }
+    td.loading {
+    	background-image: url('data:image/gif;base64,R0lGODlhCAAIAIQAAAQCBISGhMzKzOzq7FRSVCQiJNTW1PT29JyanHRydBQSFNze3Pz+/IyOjNTS1Ozu7GRmZDw6PNza3Pz6/KSmpHx+fBQWFP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJBgAXACwAAAAACAAIAAAFKOB1QM9lXkFEDM2ZKIMpOGKFmMd0IQAgmRSDwxI5mGgnRuGRMJ4MpxAAIfkECQYAGAAsAAAAAAgACACEBAIEhIaEzMrMREJEpKak9Pb0XF5c1NbUvLq8bG5sLC4sjI6M1NLUrK6sFBYUzM7MVFZUrKqs/Pr8ZGJk3NrcvL68dHJ0lJKU////AAAAAAAAAAAAAAAAAAAAAAAAAAAABSYghiFiSUwRtpSXIokCI1YyVrwU4JhHAQWUBKMmMgAGiUKp4VhhQgAh+QQJBgAaACwAAAAACAAIAIQEAgSMjozExsTs6uxUVlSsqqzU1tQkIiSkpqT09vS8uryUlpTU0tR8fnzc3tw0NjQMCgyUkpTMysz08vRkZmS0trTc2tz8+vzEwsQ8Ojz///8AAAAAAAAAAAAAAAAAAAAFKKCmKWI5KIUWlNYqSoZoDWJyaRP0lEjcIAkEJlMpLQAHAKXkIEgEkxAAIfkECQYAGAAsAAAAAAgACACEBAIEjI6MzMrM7OrsREZEtLa0/Pr8NDI0nJ6c3NrcbG5sFBYU9PL0xMbEdHZ0BAYElJKU1NLU7O7svLq8/P78rKqs5OLkdHJ0////AAAAAAAAAAAAAAAAAAAAAAAAAAAABScghk1iOUwVFpTJKgpRWRqChSlIuRBYMlCNwaFQKgAUgJxI4rAwMCEAIfkECQYAFQAsAAAAAAgACACEFBYUjI6M1NbUVFZUrKqs9Pb07OrsbG5stLa0PD48nJ6c3N7c/P78vL68JCIklJKU3NrcXFpc/Pr8dHJ0vLq8////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSVgVVFiaVBEFTBMBQXlEJUlQhTVoZTJ5BqiwgFSYjgEAFKJKAoBACH5BAkGABQALAAAAAAIAAgAhAQCBISChMTGxOzq7KyqrFRSVJSSlNza3PT29Ly6vGxubPz+/CQiJIyKjNTS1LSytJyenOTi5Pz6/HRydP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUnIEUlyCNSQ0IQQCQeBoU4QXCejrNQCnQWDcphcBIgTgvGYHI8HU4hACH5BAkGABgALAAAAAAIAAgAhAwKDISGhMTGxOTm5KSmpGxubJSWlNTW1PT29BwaHJSSlPTy9JyenNze3BQWFIyKjNTS1Ozq7MTCxHRydNza3Pz+/CQiJKSipP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAUmICYkEoWdUeA8QHVSyrkY12ljzXAWjE1AGErEBrRVLJEJ4nawhQAAIfkECQYAFwAsAAAAAAgACACEBAIEnJ6c1NLUPD487OrsJCIkvL689Pb05OLkbG5s3NrcLCoszMrM/P78BAYEpKak1NbUTEpM9PL0xMLE/Pr8dHJ0LC4s////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSdgg0QIcZ2DsxjFeVmAcTWMcEmQS1FnEriPnMJ0srkaBULl4LrkTiEAOw==');
+    	background-repeat: no-repeat;
+        background-position: center center;
+    }
+    td span.label {
+    	padding: 0 5px 0 5px !important;
+    }
+    
+    td span small {
+    	font-size: 80% !important;
+    }
+
+    .panel-heading { padding: 10px 15px !important; }
+    .panel-body { padding: 15px !important; }
+    .panel-footer { padding: 10px 15px !important; }
+    .panel {
+        margin-bottom: 20px !important; 
+        -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05) !important;
+        box-shadow: 0 1px 1px rgba(0,0,0,.05) !important;
+    }
+    
+    .job_status {
+    	cursor: pointer;
+    }
+    
+    .job-statistics {
+    	padding-right: 5px !important;
+    }
+    
+    .job-details {
+    	padding-left: 5px !important;
+    }
+    
+    pre.job {
+    	border: 0 !important;
+    	padding: 0 !important;
+    	background-color: transparent !important;
+    }
+    
+    #zend_server_login {
+        margin-left: 15px !important;
+    }
+    
+    .tooltip.top {
+        padding: 5px 0 !important;
+        margin-top: -3px !important;
+    }
+    
+    .tooltip-inner {
+        color: #ececec !important;
+        line-height: 1em !important;
+        background: rgba(101, 101, 101, 0.7) !important;
+        border: none !important;
+        border-radius: 2px !important;
+        -webkit-box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 6px 0 rgba(0, 0, 0, 0.12) !important;
+        box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 6px 0 rgba(0, 0, 0, 0.12) !important;
+    }
+    .tooltip-inner {
+        max-width: 200px !important;
+        padding: 3px 8px !important;
+        color: #fff !important;
+        text-align: center !important;
+        background-color: #000 !important;
+        border-radius: 4px !important;
+    }
+    
+    #noWorker {
+        margin-left: 15px !important;
+    }
+    
+    #noWorker .btn {
+        margin-bottom: 15px !important;
+    }
+    
+    #noWorker p {
+        font-size: 150%;
+    	line-height:1.5;
+    }
+</style>
+  
+<div ng-controller="JobWorkerCtrl" id="JobWorkerCtrl"> 
+
+   <div id="noWorker" ng-hide="showJobWorkerDetail">
+   		<button class="btn btn-raised btn-info"><i class="material-icons">info_outline</i></button>
+   		<p>This request has obviously created the job which is running in the background, details of the worker(s) are not available here.</p>
+   		<p>To get a Z-Ray Snapshot for the actual worker(s), please click on the appropriate "Z-Ray" link in the "New Jobs" tab (only available if the job has terminated, click on the 'reload' icon to get the latest status) or check out <a href="">Z-Ray Live!</a> in the Zend Server UI and reload this page.</p>
+   </div>
+
+   <div id="jobworker-list-simple" ng-show="showJobWorkerDetail">
+        <table id="table-jobworker-list" class="table table-striped table-hover ">
+          <thead>
+          <tr>
+            <th>Job ID</th>
+            <th>URL</th>
+            <th style="width: 170px;">Scheduled</th>
+            <th style="width: 170px;">Start Time</th>
+            <th style="width: 170px;">End Time</th>
+            <th style="width: 140px;">Status</th>
+            <th style="width: 70px;">&nbsp;</th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat-start="job in joblist" jobworkerrow jobid="{{job.id}}">
+          	  <td class="job_id">{{ job.id }}</td>
+              <td class="job_url">{{ job.url }}</td>
+              <td class="job_scheduled_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobScheduledStartTime | formattime | trust"></span></td>
+              <td class="job_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobStartTime | formattime | trust"></span></td>
+              <td class="job_end_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobEndTime | formattime | trust"></span></td>
+              <td class="job_status webapidata loading"><span ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
+              <td>
+            	<button ng-if="job.expanded" ng-click="job.expanded = false" class="btn btn-info"><i class="material-icons">keyboard_arrow_up</i></button>
+                <button ng-if="!job.expanded" ng-click="job.expanded = true; setExpandedStyle();" class="btn btn-info"><i class="material-icons">keyboard_arrow_down</i></button>	
+              </td>
+            </tr>
+            <tr ng-if="job.expanded" ng-repeat-end="">
+              <td colspan="7"><jobworkerdetail jobid="{{job.id}}" jobstatus="{{job.status.Status}}"></jobworkerdetail></td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div id="jobworkerdetail-template" style="display: none">
+    <div class="row">
+      <div class="job-statistics">
+        <div class="bs-component">
+          <div class="panel panel-info">
+            <div class="panel-heading">
+              <h3 class="panel-title">Statistics {{ job.id }} </h3>
+            </div>
+            <div class="panel-body">
+              <div class="job" ng-bind-html="jobstatistics | replaceConstantsStatistics | removeJsonChars | makeTable | trust"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="job-details">
+        <div class="bs-component">
+          <div class="panel panel-info">
+            <div class="panel-heading">
+              <h3 class="panel-title">Details</h3>
+            </div>
+            <div class="panel-body">
+              <pre class="job" ng-bind-html="jobdetails | filterDetails | trust"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+jQuery.ajaxSetup({
+	cache: true
+});
+
+var ngJobWorker = function() {
+
+	var JobWorkerApp = angular.module('JobWorkerApp',[]).controller('JobWorkerCtrl', function($scope) {
+
+	    $scope.loggedIn = false;
+
+    	JobWorkerDetail.isLoggedIn(function() {
+        	$scope.$apply(function(){
+				$scope.loggedIn = true;
+        	});
+        });
+
+        $scope.setJobList = function(data) {
+            $scope.showJobWorkerDetail = true;
+            this.joblist = data;
+            this.initJobList();
+            this.$apply(function(){ });
+        };
+
+        $scope.updateCnt = 0;
+
+        $scope.update = function(el) {
+            el.updateCnt++;
+            if (el.job.expanded == true) {
+            	el.job.expanded = false;
+            }
+        }
+
+        $scope.openZS = function(el) {
+        	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer/#!/job-queue/jobs?filter_timeRange_predefined=All&grid=' + el.job.id;
+        	window.open(url, '_blank');
+        }
+
+        $scope.setExpandedStyle = function () {
+            $('.job-statistics').addClass('col-md-6');
+			$('.job-details').addClass('col-md-6');
+        }
+
+        $scope.jobResponse = [];
+        $scope.initJobList = function() {
+            $scope.joblist.forEach(function(job) {
+            	$scope.jobResponse[job.id] = '';	    
+    		});
+        }
+    });
+
+	JobWorkerApp.directive('jobworkerrow', function(){
+        return {
+            link: function(scope, el, attr){
+                var row = {
+                    scope: scope, 
+                    el: el,
+                    updateCell: function(response) { 
+                        var job = response.responseData.jobInfo.job;
+
+            			this.scope.jobScheduledStartTime = job.start_or_schedule_time;
+            			this.scope.jobStartTime = job.startTime;
+            			this.scope.jobEndTime = job.endTime;
+            			this.scope.jobStatus = job.status;
+
+            			this.scope.loading = false;
+
+            			this.scope.$apply( function(){ } );
+            			
+            			this.scope.jobResponse[job.id] = response.responseData.jobInfo;
+                    }
+                }
+
+                scope.$watch('updateCnt', function (newVal, oldVal) {
+                    scope.loading = true;
+                    JobWorkerDetail.getJobDetail(attr.jobid, row);
+                });
+            }
+        }
+    });
+
+	JobWorkerApp.directive('jobworkerdetail', function(){
+        return {
+            template: $('#jobworkerdetail-template').html(),
+            link: function(scope, el, attr) {
+            	var res = scope.jobResponse[attr.jobid]
+            	scope.jobstatistics = JSON.stringify(res.job);
+            	scope.jobdetails = JSON.stringify(res.jobDetails);
+            	scope.jobstatus = attr.jobstatus;
+            }
+        }
+    });
+
+	JobWorkerApp.filter('replaceConstantsStatistics', function () {
+        
+        function replaceConstants(job) {
+        	if (typeof job != 'undefined' || job == '') {
+        		job = JSON.parse(job)
+				job["status"] = jobQueueConstants[job.status];
+            	return JSON.stringify(job, null, 2);
+        	}
+        	
+            return '';
+        }
+
+        return replaceConstants;
+    });
+
+	JobWorkerApp.filter('replaceConstantsDetail', function () {
+        
+        function replaceConstants(job) {
+        	if (typeof job != 'undefined' || job == '') {
+        		job = JSON.parse(job);
+        		job.output = "\\n\\n" + JobWorkerDetail.decodeEntities(job.output);
+        		job.vars = JSON.parse(job.vars_source);
+
+        		delete job.jobId;
+        		delete job.vars_ui;
+        		delete job.output_ui;
+        		delete job.httpHeaders_ui;
+        		delete job.vars_source;
+
+            	var json = JSON.stringify(job, null, 2);
+				json = json.replace(/(\\)\\n/g, "\n");
+            	return json;
+        	}
+        	
+            return '';
+        }
+
+        return replaceConstants;
+    });
+
+	JobWorkerApp.filter('removeJsonChars', function () {
+        
+        function replaceConstants(job) {
+        	if (typeof job != 'undefined' || job == '') {
+        		job = job.replace(/,|\{|\}|\"/g, '');
+        		return job;
+        	}
+        	
+            return '';
+        }
+
+        return replaceConstants;
+    });
+
+	JobWorkerApp.filter('makeTable', function () {
+        
+        function makeTable(job) {
+        	if (typeof job != 'undefined' || job == '') {
+            	var html = '<table>';
+            	res = job.split("\n");
+            	res.forEach(function (row) {
+					var r = row.split(/:(.+)?/);
+					if (typeof r === 'undefined' || typeof r[0] === 'undefined' || r[0] == '') return;
+					html += "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td></tr>"; 
+                });
+        		html += '</table>';
+        		return html;
+        	}
+        	
+            return '';
+        }
+
+        return makeTable;
+    });
+
+	JobWorkerApp.filter('filterDetails', function () {
+        function filterDetails(job) {
+        	if (typeof job != 'undefined' || job == '') {
+            	debugger;
+				job = JSON.parse(job);
+				var output = JobWorkerDetail.decodeEntities(job.output);
+				output = output.replace(/\\n/g, "\n");
+				var html = "<b><i>Vars:</i></b>\n" + JSON.stringify(JSON.parse(job.vars_source), null, 2);
+				html += "\n\n<b><i>Output:</i></b>\n" + (output || '-/-');
+				html += "\n\n<b><i>httpHeaders:</i></b>\n" + (job.httpHeaders || '-/-');
+				html += "\n\n<b><i>Error:</i></b>\n" + (job.error || '-/-');
+
+            	return html;
+        	}
+        	
+            return '';
+        }
+
+        return filterDetails;
+    });
+
+	JobWorkerApp.filter('filterStatus', function () {
+        function filterStatus(status) {
+            if (typeof status != 'undefined' || status == '') {
+                var html = "";
+                if (status == 'missing') {
+                    html += '<button class="btn btn-raised btn-info"><i class="material-icons">info_outline</i></button><p style="margin-top:20px">Status has not been set in job! Please consider using ZendJobQueue::setCurrentJobStatus() in your worker.</p>';
+                }
+                else {
+                    html += status;
+                }
+    
+            	return html;
+            }
+
+            return '';
+        }
+
+        return filterStatus;
+    });
+
+	JobWorkerApp.filter("trust", ['$sce', function($sce) {
+		return function(htmlCode){
+			return $sce.trustAsHtml(htmlCode);
+		}
+  	}]);
+
+	JobWorkerApp.filter('formattime', function () {
+        function formattime(timeString) {
+        	if (!timeString) return "-/-";
+    		timeString = new Date(Date.parse(timeString)).toLocaleString();
+
+    		t = timeString.split(',');
+
+    		return t[1] + '<br><small>' + t[0] + '<small>';
+        }
+
+        return formattime;
+    });
+
+	JobWorkerApp.filter('statusIdToText', function () {
+        function statusIdToText(id) {
+        	return jobQueueConstants[id];
+        }
+
+        return statusIdToText;
+    });
+
+	JobWorkerApp.filter('statusIdToLabel', function () {
+        function statusIdToLabel(id) {
+        	if (!id) return "label-default";
+        	
+            var text = jobQueueConstants[id];
+        	return jobQueueLabels[text];
+        }
+
+        return statusIdToLabel;
+    });
+}
+
+var JobWorkerDetail = {
+	webApi: function (url, row) {
+    	return $.ajax({
+            type: 'GET',
+            url: url,
+            headers: {
+              'Accept': 'application/vnd.zend.serverapi+json;version=1.8'
+            },
+            row: row
+    	})
+    },
+
+    getJobDetail: function (jobId, callback) {
+    	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer/Api/jobqueueJobInfo?id=' + jobId;
+    	var that = this; 
+    	this.webApi(url, callback)
+    	.done(function(response) {
+        	this.row.updateCell(response);
+    		return true;
+    	})
+    	.fail(function() {
+    		that.isLoggedIn(function() {});
+    	});
+    },
+    
+    isLoggedIn: function (done, fail) {
+    	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer/Api/getSystemInfo';
+    	var that = this; 
+    	this.webApi(url)
+    	.done(function() {
+    		$("#zend_server_login, #job-list-simple").hide();
+            $('td.webapidata').removeClass('loading');
+    		done();
+    	})
+    	.fail(function() {
+    		$("#zend_server_login, #job-list-simple").show();
+
+    		setTimeout(function(){ 
+    			that.isLoggedIn(done); 
+    			}, 10000);
+
+    		if (typeof fail === 'function') {
+        		fail();
+    		}
+    	});
+    },
+
+	decodeEntities: function (s) {
+        var str, temp= document.createElement('p');
+        temp.innerHTML= s;
+        str= temp.textContent || temp.innerText;
+        temp=null;
+		return str;
+	}
+};
+
+var jobWorkerListData;
+var ngJobWorkerStarted = false;
+
+(function () {
+	ngJobWorkerStarted = true;
+
+	if ((typeof ngJobStarted == 'undefined' || !ngJobStarted)){
+    	jQuery.getScript("http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.js", function(){
+    		var apps = [];
+    		ngJobWorker();
+            apps.push('JobWorkerApp');
+            if (typeof ngJob == 'function') {
+            	ngJob();
+                apps.push('JobApp');
+            }
+            angular.element(document).ready(function() {
+                angular.bootstrap(document, apps);
+                if (jobWorkerListData) $('#JobWorkerCtrl').scope().setJobList(jobWorkerListData);
+                if (jobListData && $('#JobCtrl').scope && $('#JobCtrl').scope().setJobList) $('#JobCtrl').scope().setJobList(jobListData);
+            });
+        });
+    }
+
+	var zrayLiveUrl = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer/#!/zray/live';
+	$("#noWorker button, #noWorker a").on( "click", function() {
+		window.open(zrayLiveUrl, '_blank');
+	});
+
+	zray.registerDataHandler('JobQueue', 'jobWorkerDetail', function(extensionData, requestData) {
+		jobWorkerListData = extensionData;
+    	if (!$('#JobWorkerCtrl').scope || !$('#JobWorkerCtrl').scope().setJobList) return;
+
+    	$('#JobCtrl').scope().showJobDetail = false;
+    	$('#JobWorkerCtrl').scope().setJobList(jobWorkerListData);
+    	
+    });
+    
+})();
+
+</script>
