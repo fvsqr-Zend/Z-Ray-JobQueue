@@ -54,9 +54,7 @@ class JobQueue
     {
         $status = $context['functionArgs'][0];
         $status = ($status == \ZendJobQueue::OK) ? 'OK' : 'FAILED';
-       // $storage['workerStatus'][] = array('Status' => $status);
         $this->workerStatus = array('Status' => $status);
-        error_log(var_export($this->workerStatus, true), 3, '/usr/local/zend/var/plugins/jq/status');
     }
     
     public function workerShutdown($context, &$storage)
@@ -68,8 +66,6 @@ class JobQueue
         
         $jobId = $queue->getCurrentJobId();
         $jobInfo = $queue->getJobInfo($jobId);
-        
-        error_log('SHTDOWN ' . var_export($this->workerStatus, true), 3, '/usr/local/zend/var/plugins/jq/status');
         
         $storage['jobWorkerDetail'][] = $this->processJobDetail($jobId, $jobInfo);
     }
