@@ -16,6 +16,7 @@ array_walk($c, function(&$value) {
 });
 
 $jobQueueConstants = json_encode($c, JSON_FORCE_OBJECT);
+
 ?>
 
 <script>
@@ -124,15 +125,38 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
         border-radius: 4px !important;
     }
     
+    .btn-xs {
+    	margin-bottom: -5px !important;
+    	padding-left: 22px !important;
+    }
+
     .btn-xs .material-icons {
     	font-size: 20px !important;
     }
     
-    .btn-xs {
-    	margin-bottom: 0 !important;
-    	padding: 1px 5px !important;
-    	border-radius: 3px !important;
+    .btn-info {
+    	margin-bottom: -5px !important;
     }
+    
+    #noCreator {
+        margin-left: 15px !important;
+    }
+    
+    #noCreator p {
+        font-size: 150%;
+    	line-height:1.5;
+    }
+    
+    /*
+    #zend-dev-bar #custom-panels .zdb-toolbar-detail {
+        bottom: -36px !important;
+    }
+    
+    #zend-dev-bar #custom-panels {
+        margin-top: 30px !important;
+    	height: 34px !important;
+    }
+    */.btn-xs .material-icons
 </style>
 
 <div id="zend_server_login">
@@ -142,6 +166,13 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
   
 <div ng-controller="JobCtrl"  id="JobCtrl"> 
   
+  <div id="noCreator" ng-hide="showJobDetail">
+   		<button class="btn btn-raised btn-info"><i class="material-icons">info_outline</i></button>
+   		<p>The request of this Z-Ray Snapshot has not created a job, but executed a job in the background.</p>
+   		<p>Please switch to the "Job Worker" tab to get more details.</p>
+   </div>
+
+  <div ng-show="showJobDetail">
     <div id="job-list-simple">
         <table id="table-job-list" class="table table-striped table-hover ">
           <thead>
@@ -196,8 +227,10 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
               	<div ng-if="job.tooltip" class='tooltip fade top in'><div class='tooltip-inner'>Reload information for job {{job.id}}</div></div>
               </td>
               <td>
+              <div ng-show="expandable">
             	<button ng-if="job.expanded" ng-click="job.expanded = false" class="btn btn-info"><i class="material-icons">keyboard_arrow_up</i></button>
                 <button ng-if="!job.expanded" ng-click="job.expanded = true; setExpandedStyle();" class="btn btn-info" ng-hide="loading"><i class="material-icons">keyboard_arrow_down</i></button>	
+              </div>
               </td>
             </tr>
             <tr ng-if="job.expanded" ng-repeat-end="">
@@ -206,7 +239,7 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
           </tbody>
         </table>
     </div>
-
+  </div>
 </div>
 
 <div id="jobdetail-template" style="display: none">
@@ -248,7 +281,8 @@ jQuery.ajaxSetup({
 var ngJob = function() {
     JobApp = angular.module('JobApp',[]).controller('JobCtrl', function($scope, $interval) {
 
-    	$scope.loggedIn = false;
+        $scope.loggedIn = false;
+        $scope.expandable = true;
 
     	JobDetail.isLoggedIn(function() {
         	$scope.$apply(function(){
@@ -259,6 +293,7 @@ var ngJob = function() {
         $scope.updateCnt = 0;
 
         $scope.setJobList = function(data) {
+            $scope.showJobDetail = true;
             this.joblist = data;
             this.initJobList();
             this.$apply(function(){ });
@@ -270,14 +305,15 @@ var ngJob = function() {
 
         $scope.toggleAutomaticReload = function(el) {
 			$scope.automaticreload = $scope.automaticreload != true;
-			
 			if ($scope.automaticreload) {
+				$scope.expandable = false;
 				el.$parent.updateCnt++;
 				$scope.startAutomaticReload(function () {
 					el.$parent.updateCnt++;
 				});
 			}
 			else {
+			    $scope.expandable = true;
 				$scope.stopAutomaticReload();
 			}
         }
@@ -567,7 +603,8 @@ var ngJobStarted = false;
 
 (function () {
 	ngJobStarted = true;
-	if ((typeof ngJobWorkerStarted == 'undefined' || !ngJobWorkerStarted)){
+	
+    if ((typeof ngJobWorkerStarted == 'undefined' || !ngJobWorkerStarted)){
     	jQuery.getScript("http://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.js", function(){
         	var apps = [];
             ngJob();
@@ -595,7 +632,8 @@ var ngJobStarted = false;
         jobListData = extensionData;
     	if (!$('#JobCtrl').scope || !$('#JobCtrl').scope().setJobList) return;
 
-    	$('#JobCtrl').scope().setJobList(jobListData)
+    	$('#JobWorkerCtrl').scope().showJobWorkerDetail = false;
+    	$('#JobCtrl').scope().setJobList(jobListData);
     });
     
 })();
