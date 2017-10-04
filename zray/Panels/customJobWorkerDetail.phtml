@@ -31,7 +31,7 @@ var jobQueueLabels = {
 		"Timeout": "label-danger",
 		"Removed": "label-danger",
 		"Scheduled": "label-default",
-		"Suspended": "label-default"
+		"Suspended": "label-default",
     "Failed Backend": "label-danger",
     "Failed Url": "label-danger",
     "Failed Runtime": "label-danger",
@@ -146,7 +146,6 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
 <div ng-controller="JobWorkerCtrl" id="JobWorkerCtrl">
 
    <div id="noWorker" ng-hide="showJobWorkerDetail">
-   		<button class="btn btn-raised btn-info"><i class="material-icons">info_outline</i></button>
    		<p>This request has obviously created the job which is running in the background, details of the worker(s) are not available here.</p>
    		<p>To get a Z-Ray Snapshot for the actual worker(s), please click on the appropriate "Z-Ray" link in the "New Jobs" tab (only available if the job has terminated, click on the 'reload' icon to get the latest status) or check out <a href="">Z-Ray Live!</a> in the Zend Server UI and reload this page.</p>
    </div>
