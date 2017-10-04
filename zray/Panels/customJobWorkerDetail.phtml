@@ -1,8 +1,8 @@
-<?php 
+<?php
 $ZendJobQueue = new ReflectionClass('ZendJobQueue');
 
 $c = array_filter (
-    $ZendJobQueue->getConstants(), 
+    $ZendJobQueue->getConstants(),
     function ($key) {
         return strpos($key, 'STATUS_') === 0;
     },
@@ -12,7 +12,7 @@ $c = array_filter (
 $c = array_flip($c);
 
 array_walk($c, function(&$value) {
-   $value = trim(ucwords(strtolower(str_replace(['STATUS', '_'], ['', ' '], $value)))); 
+   $value = trim(ucwords(strtolower(str_replace(['STATUS', '_'], ['', ' '], $value))));
 });
 
 $jobQueueConstants = json_encode($c, JSON_FORCE_OBJECT);
@@ -32,6 +32,11 @@ var jobQueueLabels = {
 		"Removed": "label-danger",
 		"Scheduled": "label-default",
 		"Suspended": "label-default"
+    "Failed Backend": "label-danger",
+    "Failed Url": "label-danger",
+    "Failed Runtime": "label-danger",
+    "Failed Start": "label-danger",
+    "Failed Predecessor": "label-danger",
 };
 
 var ZSbaseUrl;
@@ -49,11 +54,11 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
     	width: 98%;
     	margin-left: 10px;
     }
-    
+
     #table-jobworker-list th {
     	font-weight: bold;
     }
-    
+
     #table-jobworker-list td {
         vertical-align:middle;
     }
@@ -65,7 +70,7 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
     td span.label {
     	padding: 0 5px 0 5px !important;
     }
-    
+
     td span small {
     	font-size: 80% !important;
     }
@@ -74,38 +79,38 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
     .panel-body { padding: 15px !important; }
     .panel-footer { padding: 10px 15px !important; }
     .panel {
-        margin-bottom: 20px !important; 
+        margin-bottom: 20px !important;
         -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05) !important;
         box-shadow: 0 1px 1px rgba(0,0,0,.05) !important;
     }
-    
+
     .job_status {
     	cursor: pointer;
     }
-    
+
     .job-statistics {
     	padding-right: 5px !important;
     }
-    
+
     .job-details {
     	padding-left: 5px !important;
     }
-    
+
     pre.job {
     	border: 0 !important;
     	padding: 0 !important;
     	background-color: transparent !important;
     }
-    
+
     #zend_server_login {
         margin-left: 15px !important;
     }
-    
+
     .tooltip.top {
         padding: 5px 0 !important;
         margin-top: -3px !important;
     }
-    
+
     .tooltip-inner {
         color: #ececec !important;
         line-height: 1em !important;
@@ -123,22 +128,22 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
         background-color: #000 !important;
         border-radius: 4px !important;
     }
-    
+
     #noWorker {
         margin-left: 15px !important;
     }
-    
+
     #noWorker .btn {
         margin-bottom: 15px !important;
     }
-    
+
     #noWorker p {
         font-size: 150%;
     	line-height:1.5;
     }
 </style>
-  
-<div ng-controller="JobWorkerCtrl" id="JobWorkerCtrl"> 
+
+<div ng-controller="JobWorkerCtrl" id="JobWorkerCtrl">
 
    <div id="noWorker" ng-hide="showJobWorkerDetail">
    		<button class="btn btn-raised btn-info"><i class="material-icons">info_outline</i></button>
@@ -169,7 +174,7 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
               <td class="job_status webapidata loading"><span ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
               <td>
             	<button ng-if="job.expanded" ng-click="job.expanded = false" class="btn btn-info"><i class="material-icons">keyboard_arrow_up</i></button>
-                <button ng-if="!job.expanded" ng-click="job.expanded = true; setExpandedStyle();" class="btn btn-info"><i class="material-icons">keyboard_arrow_down</i></button>	
+                <button ng-if="!job.expanded" ng-click="job.expanded = true; setExpandedStyle();" class="btn btn-info"><i class="material-icons">keyboard_arrow_down</i></button>
               </td>
             </tr>
             <tr ng-if="job.expanded" ng-repeat-end="">
@@ -257,7 +262,7 @@ var ngJobWorker = function() {
         $scope.jobResponse = [];
         $scope.initJobList = function() {
             $scope.joblist.forEach(function(job) {
-            	$scope.jobResponse[job.id] = '';	    
+            	$scope.jobResponse[job.id] = '';
     		});
         }
     });
@@ -266,9 +271,9 @@ var ngJobWorker = function() {
         return {
             link: function(scope, el, attr){
                 var row = {
-                    scope: scope, 
+                    scope: scope,
                     el: el,
-                    updateCell: function(response) { 
+                    updateCell: function(response) {
                         var job = response.responseData.jobInfo.job;
 
             			this.scope.jobScheduledStartTime = job.start_or_schedule_time;
@@ -279,7 +284,7 @@ var ngJobWorker = function() {
             			this.scope.loading = false;
 
             			this.scope.$apply( function(){ } );
-            			
+
             			this.scope.jobResponse[job.id] = response.responseData.jobInfo;
                     }
                 }
@@ -305,14 +310,14 @@ var ngJobWorker = function() {
     });
 
 	JobWorkerApp.filter('replaceConstantsStatistics', function () {
-        
+
         function replaceConstants(job) {
         	if (typeof job != 'undefined' || job == '') {
         		job = JSON.parse(job)
 				job["status"] = jobQueueConstants[job.status];
             	return JSON.stringify(job, null, 2);
         	}
-        	
+
             return '';
         }
 
@@ -320,7 +325,7 @@ var ngJobWorker = function() {
     });
 
 	JobWorkerApp.filter('replaceConstantsDetail', function () {
-        
+
         function replaceConstants(job) {
         	if (typeof job != 'undefined' || job == '') {
         		job = JSON.parse(job);
@@ -337,7 +342,7 @@ var ngJobWorker = function() {
 				json = json.replace(/(\\)\\n/g, "\n");
             	return json;
         	}
-        	
+
             return '';
         }
 
@@ -345,13 +350,13 @@ var ngJobWorker = function() {
     });
 
 	JobWorkerApp.filter('removeJsonChars', function () {
-        
+
         function replaceConstants(job) {
         	if (typeof job != 'undefined' || job == '') {
         		job = job.replace(/,|\{|\}|\"/g, '');
         		return job;
         	}
-        	
+
             return '';
         }
 
@@ -359,7 +364,7 @@ var ngJobWorker = function() {
     });
 
 	JobWorkerApp.filter('makeTable', function () {
-        
+
         function makeTable(job) {
         	if (typeof job != 'undefined' || job == '') {
             	var html = '<table>';
@@ -367,12 +372,12 @@ var ngJobWorker = function() {
             	res.forEach(function (row) {
 					var r = row.split(/:(.+)?/);
 					if (typeof r === 'undefined' || typeof r[0] === 'undefined' || r[0] == '') return;
-					html += "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td></tr>"; 
+					html += "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td></tr>";
                 });
         		html += '</table>';
         		return html;
         	}
-        	
+
             return '';
         }
 
@@ -393,7 +398,7 @@ var ngJobWorker = function() {
 
             	return html;
         	}
-        	
+
             return '';
         }
 
@@ -410,7 +415,7 @@ var ngJobWorker = function() {
                 else {
                     html += status;
                 }
-    
+
             	return html;
             }
 
@@ -450,7 +455,7 @@ var ngJobWorker = function() {
 	JobWorkerApp.filter('statusIdToLabel', function () {
         function statusIdToLabel(id) {
         	if (!id) return "label-default";
-        	
+
             var text = jobQueueConstants[id];
         	return jobQueueLabels[text];
         }
@@ -473,7 +478,7 @@ var JobWorkerDetail = {
 
     getJobDetail: function (jobId, callback) {
     	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer/Api/jobqueueJobInfo?id=' + jobId;
-    	var that = this; 
+    	var that = this;
     	this.webApi(url, callback)
     	.done(function(response) {
         	this.row.updateCell(response);
@@ -483,10 +488,10 @@ var JobWorkerDetail = {
     		that.isLoggedIn(function() {});
     	});
     },
-    
+
     isLoggedIn: function (done, fail) {
     	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer/Api/getSystemInfo';
-    	var that = this; 
+    	var that = this;
     	this.webApi(url)
     	.done(function() {
     		$("#zend_server_login, #job-list-simple").hide();
@@ -496,8 +501,8 @@ var JobWorkerDetail = {
     	.fail(function() {
     		$("#zend_server_login, #job-list-simple").show();
 
-    		setTimeout(function(){ 
-    			that.isLoggedIn(done); 
+    		setTimeout(function(){
+    			that.isLoggedIn(done);
     			}, 10000);
 
     		if (typeof fail === 'function') {
@@ -549,9 +554,9 @@ var ngJobWorkerStarted = false;
 
     	$('#JobCtrl').scope().showJobDetail = false;
     	$('#JobWorkerCtrl').scope().setJobList(jobWorkerListData);
-    	
+
     });
-    
+
 })();
 
 </script>
