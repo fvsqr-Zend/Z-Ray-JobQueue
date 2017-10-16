@@ -1,7 +1,7 @@
 {
   "name" : "jobqueue",
   "display_name" : "JobQueue",
-  "version" : "0.3",
+  "version" : "0.4",
   "type": ["zray"],
   "logo": "logo.gif",
   "eula": "LICENSE.txt",
