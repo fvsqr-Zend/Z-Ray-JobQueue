@@ -206,6 +206,7 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
             <th style="width: 170px;">Start Time</th>
             <th style="width: 170px;">End Time</th>
             <th style="width: 70px;">Z-Ray</th>
+            <th style="width: 70px;">History</th>
             <th style="width: 140px;">Status</th>
             <th style="width: 70px;">
             	<button class="btn btn-xs btn-default" ng-class="{'btn-success': automaticreload}" ng-click="toggleAutomaticReload(this)" ng-mouseover="tooltipreload=true" ng-mouseout="tooltipreload=false"><i class="material-icons">repeat</i></button>
@@ -222,9 +223,13 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
               <td class="job_scheduled_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobScheduledStartTime | formattime | trust"></span></td>
               <td class="job_start_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobStartTime | formattime | trust"></span></td>
               <td class="job_end_time" ng-class="{loading: loading}"><span class="" ng-hide="loading" ng-bind-html="jobEndTime | formattime | trust"></span></td>
-              <td class="">
+              <td class="" ng-class="{loading: loading}">
               	<button ng-if="zrayId" class="btn btn-info" ng-click="zray(this)" ng-hide="loading" ng-mouseover="job.tooltipzray=true" ng-mouseout="job.tooltipzray=false"><i class="material-icons">launch</i></button>
               	<div ng-if="job.tooltipzray" class='tooltip fade top in'><div class='tooltip-inner'>Open Z-Ray Snapshot for job {{job.id}} in new tab</div></div>
+			  </td>
+			  <td class="" ng-class="{loading: loading}">
+              	<button ng-if="zrayId" class="btn btn-info" ng-click="history(job.url)" ng-hide="loading" ng-mouseover="job.tooltiphistory=true" ng-mouseout="job.tooltiphistory=false"><i class="material-icons">history</i></button>
+              	<div ng-if="job.tooltiphistory" class='tooltip fade top in'><div class='tooltip-inner'>Open Z-Ray History for URL {{job.url}} in new tab</div></div>
 			  </td>
               <td class="job_status" ng-class="{loading: loading}"><span ng-hide="loading" ng-click="openZS(this)" class="label {{ jobStatus | statusIdToLabel }}" ng-bind-html="jobStatus | statusIdToText | trust"></span></td>
               <td>
@@ -344,6 +349,19 @@ var ngJob = function() {
 
         $scope.zray = function(el) {
         	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer/Z-Ray-Id/' + el.zrayId;
+        	window.open(url, '_blank');
+        }
+
+        $scope.history = function(jobUrl) {
+            var hostname = jobUrl.split('/')[2];
+            
+			if (hostname.split(':').length == 1) {
+    	        var protocol = jobUrl.split('://')[0];
+				var hostnameWithPort = (protocol == 'http') ? hostname + ':80' : hostname + ':443';
+				jobUrl = jobUrl.replace(protocol + '://' + hostname, protocol + '://' + hostnameWithPort);
+        	}
+    	    
+        	var url = ZSbaseUrl.protocol + '//' + ZSbaseUrl.hostname + ':' + ZSbaseUrl.port + '/ZendServer/#!/zray/history?filter_timeRange_predefined=All&filter_freeText=' + jobUrl;
         	window.open(url, '_blank');
         }
 
