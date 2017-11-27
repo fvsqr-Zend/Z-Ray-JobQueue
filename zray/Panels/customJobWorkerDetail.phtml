@@ -146,8 +146,8 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
 <div ng-controller="JobWorkerCtrl" id="JobWorkerCtrl">
 
    <div id="noWorker" ng-hide="showJobWorkerDetail">
-   		<p>This request has obviously created the job which is running in the background, details of the worker(s) are not available here.</p>
-   		<p>To get a Z-Ray Snapshot for the actual worker(s), please click on the appropriate "Z-Ray" link in the "New Jobs" tab (only available if the job has terminated, click on the 'reload' icon to get the latest status) or check out <a href="">Z-Ray Live!</a> in the Zend Server UI and reload this page.</p>
+   		<p>This request has created jobs that run in the background. Click the Jobs Created tab to get Z-Ray snapshots per each job.</p>
+   		<p>Alternatively, you can open Z-Ray Live! or Z-Ray History on the Zend Server admin console.</p>
    </div>
 
    <div id="jobworker-list-simple" ng-show="showJobWorkerDetail">
