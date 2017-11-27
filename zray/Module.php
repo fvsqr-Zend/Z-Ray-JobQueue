@@ -30,8 +30,8 @@ class Module extends \ZRay\ZRayModule
                 'customJobWorkerDetail' => array(
                     'display' => true,
                     'logo' => 'logo.png',
-                    'menuTitle' => 'Job Worker',
-                    'panelTitle' => 'Job Worker',
+                    'menuTitle' => 'Job Info',
+                    'panelTitle' => 'Job Info',
                     'resources' => array(
                     )
                 )
