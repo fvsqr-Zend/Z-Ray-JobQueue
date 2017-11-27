@@ -21,7 +21,7 @@ class Module extends \ZRay\ZRayModule
                 'customJobDetail' => array(
                     'display' => true,
                     'logo' => 'logo.png',
-                    'menuTitle' => 'New Jobs',
+                    'menuTitle' => 'Jobs Created',
                     'panelTitle' => 'New Jobs created by current Request',
                     'resources' => array(
                     )
