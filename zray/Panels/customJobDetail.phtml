@@ -105,6 +105,13 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
 
     #zend_server_login {
         margin-left: 15px !important;
+    	margin-top: 10px !important;
+    	margin-bottom: 20px !important;
+    }
+    
+    #zend_server_login button {
+    	padding: 5px 15px 4px 15px !important; 
+    	margin-top: -6px !important;
     }
 
     .tooltip.top {
@@ -172,9 +179,8 @@ ZSbaseUrl.href = window.zendDevBar.baseUrl;
 <div ng-controller="JobCtrl"  id="JobCtrl">
 
   <div id="noCreator" ng-hide="showJobDetail">
-   		<button class="btn btn-raised btn-info"><i class="material-icons">info_outline</i></button>
    		<p>The request of this Z-Ray Snapshot has not created a job, but executed a job in the background.</p>
-   		<p>Please switch to the "Job Worker" tab to get more details.</p>
+   		<p>Please switch to the "Job Info" tab to get more details.</p>
    </div>
 
   <div ng-show="showJobDetail">
