@@ -14,12 +14,11 @@ function shutdown() {
 
 if (extension_loaded('Zend Job Queue') ) {
 
-    $q = new \ZendJobQueue();
     require_once __DIR__ . DIRECTORY_SEPARATOR . 'JobQueue.php';
 
     $jq = new JobQueue();
 
-    if ($q->getCurrentJobId()) {
+    if (\ZendJobQueue::getCurrentJobId()) {
 
         $zre->setEnabledAfter('ZendServerJobQueue\shutdown');
 
@@ -47,7 +46,7 @@ if (extension_loaded('Zend Job Queue') ) {
         $zre->setEnabledAfter('ZendJobQueue::ZendJobQueue');
 
         $zre->traceFunction(
-           'ZendJobQueue::createHttpJob',
+            'ZendJobQueue::createHttpJob',
             function() {},
             array(
                 $jq,
